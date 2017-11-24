@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title></title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box !important;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+    }
+
+    .pic {
+        width: 90%;
+        margin: 0 auto;
+    }
+
+    .pic img {
+        display: block;
+        width: 100%;
+    }
+
+    .inp-box {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .inp-box p {
+        color: #000;
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .inp-box p span {
+        display: none;
+        color: #fe0000;
+    }
+    .inp-box input{
+        display: block;
+        height: 36px;
+        margin-top: 3px;
+        margin-bottom: 8px;
+        border:1px solid #cccccc;
+        border-radius: 5px;
+        font-size:18px;
+        overflow: auto;
+        padding:0px 5px;
+    }
+    #awardcode{
+        width: 100%;
+    }
+    .ipt1, .ipt2 {
+        display: inline-block;
+        border: none;
+        height: 38px;
+        line-height: 38px;
+        margin: 0;
+        font-size: 16px;
+        padding-left: 5px;
+        background-color: transparent;
+        text-align: center;
+    }
+    .log-box{
+        width: 100%;
+        height: 36px;
+        line-height: 36px;
+        display: flex;
+        justify-content: space-between;;
+    }
+    #btn {
+        display: block;
+        margin: 0 auto;
+        width: 36%;
+        height: 40px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 20px;
+        background-color: #fe0000;
+        color: #fff;
+        line-height: 40px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .model-box {
+        display: none;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .model {
+        width: 280px;
+        height: 160px;
+        background-color: #fff;
+        margin: 0 auto;
+        margin-top: 50%;
+        border-radius: 10px;
+    }
+
+    .text {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        word-break: break-all;
+        font-size: 18px;
+        line-height: 22px;
+        letter-spacing: 0.5px;
+    }
+
+    .cancel {
+        display: block;
+        width: 40px;
+        height: 26px;
+        line-height: 26px;
+        float: right;
+        margin-right: 20px;
+        margin-top: 20px;
+        background-color: #00B2BF;
+        border: none;
+        border-radius: 5px;
+        color: #fff;
+    }
+</style>
+<body>
+<div class="pic">
+    <img src="images/171116143011.jpg" alt="">
+</div>
+<div class="inp-box">
+    <p class="p1">兑奖码: <span>输入格式有误</span></p>
+    <input type="text" id="awardcode" size='11' maxlength='11' oninput="value=value.replace(/[^\d]/g,'')">
+    <p class='p2'>物流码: <span>输入格式有误</span></p>
+    <div class="log-box">
+        <input type="text" size='2' maxlength='2' oninput="value=value.replace(/[^\d]/g,'')" class='log1'>
+        -
+        <input type="text" size='4' maxlength='4' oninput="value=value.replace(/[^\d]/g,'')" class='log2'>
+        -
+        <input type="text" size='7' maxlength='7' oninput="value=value.replace(/[^\d]/g,'')" class='log3'>
+        -
+        <input type="text" size='3' maxlength='3' oninput="value=value.replace(/[^\d]/g,'')" class='log4'>
+    </div>
+</div>
+<button id="btn">兑&nbsp;奖</button>
+<div class="model-box">
+    <div class="model">
+        <p class="text"></p>
+        <button class="cancel">确定</button>
+    </div>
+</div>
+<input type="hidden" id="openid" value="{{.Openid}}"/>
+<input type="hidden" id="accesstoken" value="{{.AccessToken}}"/>
+</body>
+<script type="text/javascript" src="./jquery-2.1.4.js"></script>
+<script type="text/javascript">
+    $('.cancel').on('click', function () {
+        $('.model-box').css('display', 'none');
+        WeixinJSBridge.call('closeWindow');
+    })
+    $('.log-box input').on('input', function () {
+        if($(this).val().length == $(this).attr('maxlength')){
+            $(this).next('input').focus();
+        }
+    })
+    $('#btn').on('click', function () {
+        var openid = $("#openid").val();
+        var accesstoken = $("#accesstoken").val();
+        var awardcode = $('#awardcode').val();
+        var awLen = awardcode.length;
+        var logisticscode = $('.log1').val() +'-'+ $('.log2').val() +'-'+ $('.log3').val() +'-'+ $('.log4').val();
+        var logLen = logisticscode.length;
+        if(awLen != 11){
+            $('.p1 span').css('display','block');
+            return false;
+        }else {
+            $('.p1 span').css('display','none');
+        };
+        if(logLen != 19){
+            $('.p2 span').css('display','block');
+            return false;
+        }else {
+            $('.p2 span').css('display','none');
+        }
+        $.ajax({
+            type: 'post',
+            async:false,
+            url: 'http://server.ttyuecai.com:8911/code?accesstoken=' + accesstoken,
+            data: {
+                'openid': openid,
+                'awardcode': awardcode,
+                'logisticscode': logisticscode
+            },
+            success: function (data) {
+                console.log(data);
+                if (data.code == 0) {
+                    $('.text').text('您的兑奖信息已提交,请耐心等待兑奖结果,请勿重复提交!');
+                    $('.model-box').css('display', 'block');
+                } else if (data.code == 1) {
+                    $('.text').text(data.msg);
+                    $('.model-box').css('display', 'block');
+                }
+            },
+            error: function () {
+                $('.text').text('无法连接到服务器,请刷新重试。');
+               $('.model-box').css('display', 'block');
+            }
+        })
+    })
+
+
+
+</script>
+</html>
